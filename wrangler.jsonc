@@ -1,0 +1,38 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "kaiwa",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-08-18",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*", "/health"]
+  },
+  "containers": [
+    {
+      "class_name": "KaiwaContainer",
+      "image": "./Dockerfile",
+      "max_instances": 1,
+      "instance_type": "standard-3"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "KAIWA_CONTAINER",
+        "class_name": "KaiwaContainer"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["KaiwaContainer"]
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}
