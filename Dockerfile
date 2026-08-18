@@ -11,7 +11,7 @@ ENV UV_COMPILE_BYTECODE=1 \
     PATH="/app/.venv/bin:$PATH"
 
 RUN apt-get update \
-    && apt-get install --no-install-recommends -y ffmpeg libsndfile1 \
+    && apt-get install --no-install-recommends -y ffmpeg git libsndfile1 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml uv.lock ./
