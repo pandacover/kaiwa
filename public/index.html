@@ -3,12 +3,41 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Kaiwa</title>
+    <meta name="theme-color" content="#11130f">
+    <title>Kaiwa — voice chat</title>
+    <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
-    <main>
-      <h1>Kaiwa</h1>
-      <p>The voice agent is warming up.</p>
+    <main class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">VOICE AGENT</p>
+          <h1>Kaiwa</h1>
+        </div>
+        <span class="status-dot" aria-hidden="true"></span>
+      </header>
+
+      <section id="messages" class="messages" aria-live="polite">
+        <div class="message assistant-message intro-message">
+          <p>Hey — send me a message. I’ll reply in text first, then prepare the voice in the background.</p>
+        </div>
+      </section>
+
+      <p id="app-status" class="app-status" role="status">Ready</p>
+
+      <form id="chat-form" class="composer">
+        <label class="sr-only" for="message-input">Message Kaiwa</label>
+        <textarea
+          id="message-input"
+          name="message"
+          rows="1"
+          maxlength="8000"
+          placeholder="Say something…"
+          required
+        ></textarea>
+        <button id="send-button" type="submit">Send</button>
+      </form>
     </main>
+    <script type="module" src="/app.js"></script>
   </body>
 </html>
