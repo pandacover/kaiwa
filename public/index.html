@@ -3,18 +3,20 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#11130f">
+    <meta name="theme-color" content="#101010">
     <title>Kaiwa — voice chat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Space+Grotesk:wght@700&amp;display=swap"
+      rel="stylesheet"
+    >
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
     <main class="app-shell">
       <header class="app-header">
-        <div>
-          <p class="eyebrow">VOICE AGENT</p>
-          <h1>Kaiwa</h1>
-        </div>
-        <span class="status-dot" aria-hidden="true"></span>
+        <h1>kaiwa</h1>
       </header>
 
       <section id="messages" class="messages" aria-live="polite">
@@ -23,20 +25,28 @@
         </div>
       </section>
 
-      <p id="app-status" class="app-status" role="status">Ready</p>
-
       <form id="chat-form" class="composer">
         <label class="sr-only" for="message-input">Message Kaiwa</label>
         <textarea
           id="message-input"
           name="message"
-          rows="1"
+          rows="3"
           maxlength="8000"
           placeholder="Say something…"
           required
         ></textarea>
-        <button id="send-button" type="submit">Send</button>
+        <div class="composer-actions">
+          <span class="keyboard-hint" aria-hidden="true">Enter to send · Shift + Enter for a new line</span>
+          <button id="send-button" type="submit" aria-label="Send message">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M4.75 10h10.5M11 5.75 15.25 10 11 14.25"></path>
+            </svg>
+            <span class="sr-only">Send message</span>
+          </button>
+        </div>
       </form>
+
+      <p id="app-status" class="sr-only" role="status">Ready</p>
     </main>
     <script type="module" src="/app.js"></script>
   </body>

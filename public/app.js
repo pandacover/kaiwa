@@ -64,10 +64,21 @@ function appendMessage(role, text, withAudio = false, isError = false) {
     const button = document.createElement("button");
     button.className = "audio-button";
     button.type = "button";
-    button.textContent = "Preparing voice…";
-    button.disabled = true;
+    button.innerHTML = `
+      <svg viewBox="0 0 20 20" aria-hidden="true">
+        <path class="audio-icon-play" d="m7.25 5.5 7.5 4.5-7.5 4.5z"></path>
+        <g class="audio-icon-pause">
+          <path d="M7.25 5.5v9"></path>
+          <path d="M12.75 5.5v9"></path>
+        </g>
+        <path class="audio-icon-retry" d="M15.25 7.25V3.8m0 0H11.8m3.45 0A6.25 6.25 0 1 0 16 11"></path>
+        <path class="audio-icon-loading" d="M10 3.75a6.25 6.25 0 0 1 6.25 6.25"></path>
+      </svg>
+      <span class="sr-only">Preparing voice</span>
+    `;
     article.append(button);
     audioControl = { button, audio: null, loading: false, speechText: "" };
+    setAudioButtonState(audioControl, "loading", "Preparing voice");
     button.addEventListener("click", () => toggleAudio(audioControl));
   }
 
@@ -79,8 +90,7 @@ function appendMessage(role, text, withAudio = false, isError = false) {
 async function prepareAudio(control, speechText) {
   control.speechText = speechText;
   control.loading = true;
-  control.button.disabled = true;
-  control.button.textContent = "Warming up voice…";
+  setAudioButtonState(control, "loading", "Warming up voice");
 
   try {
     const response = await fetch("/api/tts", {
@@ -97,21 +107,23 @@ async function prepareAudio(control, speechText) {
     objectUrls.add(url);
     control.audio = new Audio(url);
     control.audio.addEventListener("play", () => {
-      control.button.textContent = "Pause voice";
+      setAudioButtonState(control, "pause", "Pause voice");
     });
     control.audio.addEventListener("pause", () => {
-      control.button.textContent = "Play voice";
+      setAudioButtonState(control, "play", "Play voice");
     });
     control.audio.addEventListener("ended", () => {
-      control.button.textContent = "Play voice";
+      setAudioButtonState(control, "play", "Play voice");
       if (activeAudio === control.audio) activeAudio = null;
     });
-    control.button.textContent = "Play voice";
-    control.button.disabled = false;
+    setAudioButtonState(control, "play", "Play voice");
   } catch (error) {
-    control.button.textContent = "Retry voice";
-    control.button.title = error.message || "Voice generation failed";
-    control.button.disabled = false;
+    setAudioButtonState(
+      control,
+      "retry",
+      "Retry voice",
+      error.message || "Voice generation failed",
+    );
   } finally {
     control.loading = false;
   }
@@ -128,7 +140,7 @@ function toggleAudio(control) {
     if (activeAudio && activeAudio !== control.audio) activeAudio.pause();
     activeAudio = control.audio;
     control.audio.play().catch(() => {
-      control.button.textContent = "Retry playback";
+      setAudioButtonState(control, "retry", "Retry playback");
     });
   } else {
     control.audio.pause();
@@ -138,14 +150,24 @@ function toggleAudio(control) {
 function setSending(value, status) {
   sending = value;
   sendButton.disabled = value;
-  sendButton.textContent = value ? "Sending…" : "Send";
+  sendButton.dataset.loading = String(value);
+  sendButton.setAttribute("aria-label", value ? "Sending message" : "Send message");
+  sendButton.querySelector(".sr-only").textContent = value ? "Sending message" : "Send message";
   appStatus.textContent = status || (value ? "Kaiwa is thinking…" : "Ready");
   if (!value) input.focus();
 }
 
 function resizeInput() {
   input.style.height = "auto";
-  input.style.height = `${Math.min(input.scrollHeight, 160)}px`;
+  input.style.height = `${Math.min(input.scrollHeight, 240)}px`;
+}
+
+function setAudioButtonState(control, state, label, title = label) {
+  control.button.dataset.state = state;
+  control.button.disabled = state === "loading";
+  control.button.setAttribute("aria-label", label);
+  control.button.title = title;
+  control.button.querySelector(".sr-only").textContent = label;
 }
 
 async function readJson(response) {
