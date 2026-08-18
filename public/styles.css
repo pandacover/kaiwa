@@ -11,6 +11,14 @@
   --text: #eeeeec;
   --text-muted: #898989;
   --text-subtle: #666666;
+  --voice-blue: #3b82f6;
+  --voice-blue-glow: rgba(59, 130, 246, 0.42);
+}
+
+@property --voice-border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
 }
 
 * {
@@ -96,8 +104,52 @@ h1 {
 }
 
 .assistant-message {
-  padding-right: 64px;
+  padding-inline: 0;
   background: transparent;
+}
+
+.assistant-message.voice-message {
+  --voice-border-angle: 0deg;
+  border: 1px solid transparent;
+}
+
+.assistant-message.voice-loading {
+  background:
+    linear-gradient(var(--canvas), var(--canvas)) padding-box,
+    conic-gradient(
+      from var(--voice-border-angle),
+      #ffffff 0deg,
+      var(--voice-blue) 105deg,
+      rgba(59, 130, 246, 0.18) 230deg,
+      #ffffff 360deg
+    ) border-box;
+  box-shadow: 0 0 30px var(--voice-blue-glow);
+  animation: rotate-voice-border 2.4s linear infinite;
+}
+
+.assistant-message.voice-ready {
+  border-color: var(--voice-blue);
+  box-shadow: 0 0 30px var(--voice-blue-glow);
+}
+
+.assistant-message.voice-playing {
+  background:
+    linear-gradient(var(--canvas), var(--canvas)) padding-box,
+    conic-gradient(
+      from var(--voice-border-angle),
+      #ffffff 0deg,
+      rgba(255, 255, 255, 0.14) 150deg,
+      #ffffff 300deg,
+      #ffffff 360deg
+    ) border-box;
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.28);
+  animation: rotate-voice-border 1.8s linear infinite;
+}
+
+.assistant-message.voice-played,
+.assistant-message.voice-error {
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .user-message {
@@ -112,7 +164,7 @@ h1 {
 .audio-button {
   position: absolute;
   top: 50%;
-  right: 12px;
+  left: 50%;
   width: 40px;
   height: 40px;
   padding: 0;
@@ -123,15 +175,42 @@ h1 {
   background: #1b1b1b;
   color: var(--text);
   opacity: 0;
-  transform: translateY(-42%) scale(0.94);
-  transition: opacity 150ms ease, transform 150ms ease, background-color 150ms ease, border-color 150ms ease;
+  transform: translateY(-50%) translateX(-50%);
+  transition: opacity 150ms ease, background-color 150ms ease, border-color 150ms ease;
 }
 
 .assistant-message:hover .audio-button,
 .audio-button:focus-visible,
 .assistant-message:focus-within .audio-button {
   opacity: 1;
-  transform: translateY(-50%) scale(1);
+}
+
+.voice-status-overlay {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
+  background: rgba(16, 16, 16, 0.42);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  opacity: 0;
+  pointer-events: none;
+  backdrop-filter: blur(7px);
+  transition: opacity 150ms ease;
+}
+
+.voice-loading:hover .voice-status-overlay,
+.voice-loading:focus-within .voice-status-overlay {
+  opacity: 1;
+}
+
+.voice-loading:hover .audio-button,
+.voice-loading:focus-within .audio-button {
+  opacity: 0;
 }
 
 .audio-button:hover:not(:disabled),
@@ -283,7 +362,7 @@ textarea::placeholder {
   }
 
   .assistant-message {
-    padding-right: 52px;
+    padding-inline: 0;
   }
 
   .messages {
@@ -302,7 +381,6 @@ textarea::placeholder {
 @media (hover: none) {
   .audio-button {
     opacity: 1;
-    transform: translateY(-50%) scale(1);
   }
 }
 
@@ -320,5 +398,11 @@ textarea::placeholder {
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes rotate-voice-border {
+  to {
+    --voice-border-angle: 360deg;
   }
 }
