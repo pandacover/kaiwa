@@ -7,7 +7,12 @@ WORKDIR /app
 
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
+    HF_HOME="/models/huggingface" \
     PATH="/app/.venv/bin:$PATH"
+
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y ffmpeg libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
@@ -15,6 +20,7 @@ RUN uv sync --frozen --no-dev --no-install-project
 COPY README.md ./
 COPY src ./src
 RUN uv sync --frozen --no-dev
+RUN uv run python -m kaiwa.prefetch_tts
 
 EXPOSE 8080
 
