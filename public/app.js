@@ -61,6 +61,8 @@ function appendMessage(role, text, withAudio = false, isError = false) {
 
   let audioControl = null;
   if (withAudio) {
+    article.classList.add("voice-message", "voice-loading");
+
     const button = document.createElement("button");
     button.className = "audio-button";
     button.type = "button";
@@ -76,8 +78,19 @@ function appendMessage(role, text, withAudio = false, isError = false) {
       </svg>
       <span class="sr-only">Preparing voice</span>
     `;
-    article.append(button);
-    audioControl = { button, audio: null, loading: false, speechText: "" };
+    const statusOverlay = document.createElement("span");
+    statusOverlay.className = "voice-status-overlay";
+    statusOverlay.textContent = "warming up voice";
+    statusOverlay.setAttribute("aria-hidden", "true");
+    article.append(button, statusOverlay);
+    audioControl = {
+      article,
+      button,
+      audio: null,
+      loading: false,
+      played: false,
+      speechText: "",
+    };
     setAudioButtonState(audioControl, "loading", "Preparing voice");
     button.addEventListener("click", () => toggleAudio(audioControl));
   }
@@ -110,9 +123,11 @@ async function prepareAudio(control, speechText) {
       setAudioButtonState(control, "pause", "Pause voice");
     });
     control.audio.addEventListener("pause", () => {
+      control.played = control.audio.currentTime > 0;
       setAudioButtonState(control, "play", "Play voice");
     });
     control.audio.addEventListener("ended", () => {
+      control.played = true;
       setAudioButtonState(control, "play", "Play voice");
       if (activeAudio === control.audio) activeAudio = null;
     });
@@ -163,6 +178,19 @@ function resizeInput() {
 }
 
 function setAudioButtonState(control, state, label, title = label) {
+  let voiceState = "error";
+  if (state === "loading") voiceState = "loading";
+  if (state === "pause") voiceState = "playing";
+  if (state === "play") voiceState = control.played ? "played" : "ready";
+
+  control.article.classList.remove(
+    "voice-loading",
+    "voice-ready",
+    "voice-playing",
+    "voice-played",
+    "voice-error",
+  );
+  control.article.classList.add(`voice-${voiceState}`);
   control.button.dataset.state = state;
   control.button.disabled = state === "loading";
   control.button.setAttribute("aria-label", label);
