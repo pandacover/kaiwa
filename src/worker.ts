@@ -15,6 +15,7 @@ export default {
     if (path === "/health" || path.startsWith("/api/")) {
       const container = env.KAIWA_CONTAINER.getByName("singleton");
       await container.startAndWaitForPorts({
+        cancellationOptions: { portReadyTimeoutMS: 120_000 },
         startOptions: {
           envVars: { OPENROUTER_API_KEY: env.OPENROUTER_API_KEY },
         },
