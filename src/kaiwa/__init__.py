@@ -3,12 +3,17 @@ from typing import Any
 from flask import Flask, jsonify, request
 
 from kaiwa.agent import AgentConfigurationError, AgentService
+from kaiwa.tts import MAX_TTS_CHARS, TTSService
 
 
-def create_app(agent_service: Any | None = None) -> Flask:
+def create_app(
+    agent_service: Any | None = None,
+    tts_service: Any | None = None,
+) -> Flask:
     """Create and configure the Kaiwa Flask application."""
     app = Flask(__name__)
     app.config["AGENT_SERVICE"] = agent_service
+    app.config["TTS_SERVICE"] = tts_service
 
     @app.get("/")
     def index():
@@ -35,6 +40,27 @@ def create_app(agent_service: Any | None = None) -> Flask:
         except Exception:
             app.logger.exception("Chat generation failed")
             return jsonify(error="Chat generation failed. Please try again."), 502
+
+    @app.post("/api/tts")
+    def tts():
+        payload = request.get_json(silent=True)
+        if not isinstance(payload, dict):
+            return jsonify(error="Request body must be a JSON object."), 400
+        text = payload.get("text")
+        if not isinstance(text, str) or not text.strip():
+            return jsonify(error="text must be a non-empty string."), 400
+        if len(text) > MAX_TTS_CHARS:
+            return jsonify(error=f"text cannot exceed {MAX_TTS_CHARS} characters."), 400
+
+        try:
+            service = app.config["TTS_SERVICE"]
+            if service is None:
+                service = app.config["TTS_SERVICE"] = TTSService()
+            audio = service.synthesize(text.strip())
+            return app.response_class(audio, mimetype="audio/wav")
+        except Exception:
+            app.logger.exception("Speech generation failed")
+            return jsonify(error="Speech generation failed. Please try again."), 500
 
     return app
 
