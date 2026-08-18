@@ -1,0 +1,7 @@
+.git
+.venv
+.wrangler
+node_modules
+__pycache__
+*.pyc
+.dev.vars
