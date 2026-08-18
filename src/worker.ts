@@ -1,11 +1,5 @@
 import { Container } from "@cloudflare/containers";
 
-declare global {
-  interface Env {
-    OPENROUTER_API_KEY: string;
-  }
-}
-
 export class KaiwaContainer extends Container {
   defaultPort = 8080;
   requiredPorts = [8080];
